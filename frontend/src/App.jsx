@@ -1,122 +1,102 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import PublicLayout from './layouts/PublicLayout';
+import DashboardLayout from './layouts/DashboardLayout';
+import ProtectedRoute from './components/common/ProtectedRoute';
+
+// Pages
+import LandingPage from './pages/LandingPage';
+import DemoFoundationPage from './pages/DemoFoundationPage';
+import StudentDashboard from './pages/StudentDashboard';
+import OrganizerDashboard from './pages/OrganizerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import ProfilePage from './pages/ProfilePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <ToastProvider>
+        <AuthProvider>
+          <Routes>
+            {/* Public Layout Routes */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/demo-foundation" element={<DemoFoundationPage />} />
+              <Route path="/events" element={<DemoFoundationPage />} />
+              <Route path="/recommendations" element={<DemoFoundationPage />} />
+              <Route path="/verify" element={<DemoFoundationPage />} />
+              <Route path="/login" element={<DemoFoundationPage />} />
+              <Route path="/register" element={<DemoFoundationPage />} />
+            </Route>
 
-      <div className="ticks"></div>
+            {/* Student Protected Routes */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={['student']}>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/student/recommendations" element={<StudentDashboard />} />
+              <Route path="/student/registrations" element={<StudentDashboard />} />
+              <Route path="/student/calendar" element={<StudentDashboard />} />
+              <Route path="/student/certificates" element={<StudentDashboard />} />
+            </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            {/* Organizer Protected Routes */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={['organizer', 'admin']}>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/organizer" element={<OrganizerDashboard />} />
+              <Route path="/organizer/events" element={<OrganizerDashboard />} />
+              <Route path="/organizer/events/new" element={<OrganizerDashboard />} />
+              <Route path="/organizer/attendance" element={<OrganizerDashboard />} />
+              <Route path="/organizer/analytics" element={<OrganizerDashboard />} />
+            </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            {/* Admin Protected Routes */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/events" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminDashboard />} />
+              <Route path="/admin/feedback" element={<AdminDashboard />} />
+              <Route path="/admin/certificates" element={<AdminDashboard />} />
+              <Route path="/admin/audit-logs" element={<AdminDashboard />} />
+              <Route path="/admin/analytics" element={<AdminDashboard />} />
+            </Route>
+
+            {/* Common Protected Profile Route */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/notifications" element={<ProfilePage />} />
+            </Route>
+
+            {/* 404 Catch-All */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </AuthProvider>
+      </ToastProvider>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
