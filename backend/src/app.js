@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { sendSuccess } from './utils/apiResponse.js';
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 
@@ -37,6 +39,15 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Request Logging Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    console.log(`[HTTP] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${Date.now() - start}ms)`);
+  });
+  next();
+});
+
 // Global Rate Limiting (100 requests per 15 minutes per IP)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -69,6 +80,10 @@ app.get('/', (req, res) => {
     healthCheck: '/api/health'
   });
 });
+
+// Mount API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Central 404 handler
 app.use(notFoundHandler);

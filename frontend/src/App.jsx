@@ -7,6 +7,10 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Pages
 import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DemoFoundationPage from './pages/DemoFoundationPage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
@@ -23,12 +27,15 @@ function App() {
             {/* Public Layout Routes */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/demo-foundation" element={<DemoFoundationPage />} />
               <Route path="/events" element={<DemoFoundationPage />} />
               <Route path="/recommendations" element={<DemoFoundationPage />} />
               <Route path="/verify" element={<DemoFoundationPage />} />
-              <Route path="/login" element={<DemoFoundationPage />} />
-              <Route path="/register" element={<DemoFoundationPage />} />
             </Route>
 
             {/* Student Protected Routes */}
