@@ -7,6 +7,8 @@ import { sendSuccess } from './utils/apiResponse.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
+import registrationRoutes from './routes/registrationRoutes.js';
+import attendanceRoutes from './routes/attendanceRoutes.js';
 
 const app = express();
 
@@ -86,6 +88,8 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/registrations', registrationRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Central 404 handler
 app.use(notFoundHandler);

@@ -352,6 +352,19 @@ export const OrganizerEventsPage = () => {
                     </Button>
                   )}
 
+                  {event.status === 'approved' && (
+                    <Link to={`/organizer/attendance?eventId=${event._id}`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10"
+                        leftIcon={<Users className="w-3.5 h-3.5" />}
+                      >
+                        Attendance ({event.registeredCount || 0})
+                      </Button>
+                    </Link>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"

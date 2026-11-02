@@ -16,6 +16,8 @@ import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import OrganizerEventsPage from './pages/OrganizerEventsPage';
 import AdminEventsPage from './pages/AdminEventsPage';
+import StudentRegistrationsPage from './pages/StudentRegistrationsPage';
+import OrganizerAttendancePage from './pages/OrganizerAttendancePage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -55,7 +57,7 @@ function App() {
               <Route path="/student/events" element={<EventsPage />} />
               <Route path="/student/events/:id" element={<EventDetailPage />} />
               <Route path="/student/recommendations" element={<StudentDashboard />} />
-              <Route path="/student/registrations" element={<StudentDashboard />} />
+              <Route path="/student/registrations" element={<StudentRegistrationsPage />} />
               <Route path="/student/calendar" element={<StudentDashboard />} />
               <Route path="/student/certificates" element={<StudentDashboard />} />
             </Route>
@@ -71,7 +73,7 @@ function App() {
               <Route path="/organizer" element={<OrganizerDashboard />} />
               <Route path="/organizer/events" element={<OrganizerEventsPage />} />
               <Route path="/organizer/events/new" element={<OrganizerEventsPage />} />
-              <Route path="/organizer/attendance" element={<OrganizerDashboard />} />
+              <Route path="/organizer/attendance" element={<OrganizerAttendancePage />} />
               <Route path="/organizer/analytics" element={<OrganizerDashboard />} />
             </Route>
 
@@ -85,6 +87,7 @@ function App() {
             >
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/events" element={<AdminEventsPage />} />
+              <Route path="/admin/attendance" element={<OrganizerAttendancePage />} />
               <Route path="/admin/users" element={<AdminDashboard />} />
               <Route path="/admin/feedback" element={<AdminDashboard />} />
               <Route path="/admin/certificates" element={<AdminDashboard />} />
