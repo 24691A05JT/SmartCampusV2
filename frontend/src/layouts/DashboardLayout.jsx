@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../services/apiClient';
 import {
   Sparkles,
   LayoutDashboard,
@@ -32,6 +33,30 @@ export const DashboardLayout = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUnread = async () => {
+      if (!user) return;
+      try {
+        const res = await apiClient.get('/notifications/unread-count');
+        if (isMounted && res.data?.unreadCount !== undefined) {
+          setUnreadCount(res.data.unreadCount);
+        }
+      } catch (err) {
+        // Silently catch background poll in layout
+      }
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [user, location.pathname]);
 
   // Define navigation items dynamically based on authenticated role
   const getNavItems = () => {
@@ -216,7 +241,11 @@ export const DashboardLayout = () => {
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-slate-950" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-slate-950">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
 
             {/* Profile Dropdown */}

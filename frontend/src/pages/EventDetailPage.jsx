@@ -22,6 +22,7 @@ import Badge from '../components/common/Badge';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import TicketModal from '../components/registrations/TicketModal';
+import EventReviewsSection from '../components/feedback/EventReviewsSection';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import apiClient from '../services/apiClient';
@@ -346,6 +347,9 @@ export const EventDetailPage = () => {
               </div>
             )}
           </div>
+
+          {/* Ratings & Reviews Section */}
+          <EventReviewsSection event={event} />
         </div>
 
         {/* Right Column: Registration Card */}

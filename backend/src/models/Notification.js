@@ -27,6 +27,7 @@ const notificationSchema = new mongoose.Schema(
         'attendance',
         'certificate',
         'event_update',
+        'feedback',
         'system'
       ],
       default: 'system',

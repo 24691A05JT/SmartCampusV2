@@ -18,6 +18,8 @@ import OrganizerEventsPage from './pages/OrganizerEventsPage';
 import AdminEventsPage from './pages/AdminEventsPage';
 import StudentRegistrationsPage from './pages/StudentRegistrationsPage';
 import OrganizerAttendancePage from './pages/OrganizerAttendancePage';
+import NotificationsPage from './pages/NotificationsPage';
+import AdminFeedbackPage from './pages/AdminFeedbackPage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -89,7 +91,7 @@ function App() {
               <Route path="/admin/events" element={<AdminEventsPage />} />
               <Route path="/admin/attendance" element={<OrganizerAttendancePage />} />
               <Route path="/admin/users" element={<AdminDashboard />} />
-              <Route path="/admin/feedback" element={<AdminDashboard />} />
+              <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
               <Route path="/admin/certificates" element={<AdminDashboard />} />
               <Route path="/admin/audit-logs" element={<AdminDashboard />} />
               <Route path="/admin/analytics" element={<AdminDashboard />} />
@@ -104,7 +106,7 @@ function App() {
               }
             >
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/notifications" element={<ProfilePage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
             </Route>
 
             {/* 404 Catch-All */}
