@@ -113,6 +113,9 @@ const eventSchema = new mongoose.Schema(
 
 // Compound index for instant venue & schedule conflict queries
 eventSchema.index({ venue: 1, date: 1, status: 1 });
+eventSchema.index({ status: 1, date: 1 });
+eventSchema.index({ organizer: 1, createdAt: -1 });
+eventSchema.index({ title: 'text', description: 'text', tags: 'text' });
 
 const Event = mongoose.model('Event', eventSchema);
 export default Event;

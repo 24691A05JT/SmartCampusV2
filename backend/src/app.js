@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { sendSuccess } from './utils/apiResponse.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import eventRoutes from './routes/eventRoutes.js';
 
 const app = express();
 
@@ -84,6 +85,7 @@ app.get('/', (req, res) => {
 // Mount API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/events', eventRoutes);
 
 // Central 404 handler
 app.use(notFoundHandler);

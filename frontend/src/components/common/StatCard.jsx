@@ -1,3 +1,4 @@
+import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 const ACCENTS = {
@@ -50,7 +51,11 @@ export const StatCard = ({
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</p>
         {Icon && (
           <div className={`p-2.5 rounded-xl border ${accent.bg}`}>
-            <Icon className={`w-5 h-5 ${accent.icon}`} />
+            {React.isValidElement(Icon) ? (
+              Icon
+            ) : typeof Icon === 'function' ? (
+              <Icon className={`w-5 h-5 ${accent.icon}`} />
+            ) : null}
           </div>
         )}
       </div>

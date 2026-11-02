@@ -88,3 +88,33 @@ export const authorize = (...roles) => {
     next();
   };
 };
+
+/**
+ * Middleware: Optional Authentication (attaches req.user if valid token present, passes through otherwise)
+ */
+export const optionalProtect = async (req, res, next) => {
+  let token = null;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    if (user && user.isActive) {
+      req.user = user;
+    }
+  } catch (err) {
+    // Ignore error for optional authentication
+  }
+
+  next();
+};

@@ -29,6 +29,10 @@ export const ToastProvider = ({ children }) => {
     }
   }, [removeToast]);
 
+  const addToast = useCallback((message, type = 'info', title = null) => {
+    showToast({ type, message, title });
+  }, [showToast]);
+
   const success = useCallback((message, title = 'Success') => {
     showToast({ type: 'success', message, title });
   }, [showToast]);
@@ -46,7 +50,7 @@ export const ToastProvider = ({ children }) => {
   }, [showToast]);
 
   return (
-    <ToastContext.Provider value={{ showToast, success, error, warning, info, removeToast }}>
+    <ToastContext.Provider value={{ showToast, addToast, success, error, warning, info, removeToast }}>
       {children}
       {/* Toast Notification Container */}
       <div 

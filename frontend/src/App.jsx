@@ -12,6 +12,10 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DemoFoundationPage from './pages/DemoFoundationPage';
+import EventsPage from './pages/EventsPage';
+import EventDetailPage from './pages/EventDetailPage';
+import OrganizerEventsPage from './pages/OrganizerEventsPage';
+import AdminEventsPage from './pages/AdminEventsPage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -33,7 +37,8 @@ function App() {
               <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/demo-foundation" element={<DemoFoundationPage />} />
-              <Route path="/events" element={<DemoFoundationPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/recommendations" element={<DemoFoundationPage />} />
               <Route path="/verify" element={<DemoFoundationPage />} />
             </Route>
@@ -47,6 +52,8 @@ function App() {
               }
             >
               <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/student/events" element={<EventsPage />} />
+              <Route path="/student/events/:id" element={<EventDetailPage />} />
               <Route path="/student/recommendations" element={<StudentDashboard />} />
               <Route path="/student/registrations" element={<StudentDashboard />} />
               <Route path="/student/calendar" element={<StudentDashboard />} />
@@ -62,8 +69,8 @@ function App() {
               }
             >
               <Route path="/organizer" element={<OrganizerDashboard />} />
-              <Route path="/organizer/events" element={<OrganizerDashboard />} />
-              <Route path="/organizer/events/new" element={<OrganizerDashboard />} />
+              <Route path="/organizer/events" element={<OrganizerEventsPage />} />
+              <Route path="/organizer/events/new" element={<OrganizerEventsPage />} />
               <Route path="/organizer/attendance" element={<OrganizerDashboard />} />
               <Route path="/organizer/analytics" element={<OrganizerDashboard />} />
             </Route>
@@ -77,7 +84,7 @@ function App() {
               }
             >
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/events" element={<AdminDashboard />} />
+              <Route path="/admin/events" element={<AdminEventsPage />} />
               <Route path="/admin/users" element={<AdminDashboard />} />
               <Route path="/admin/feedback" element={<AdminDashboard />} />
               <Route path="/admin/certificates" element={<AdminDashboard />} />
