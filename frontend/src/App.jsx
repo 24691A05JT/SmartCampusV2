@@ -20,6 +20,7 @@ import StudentRegistrationsPage from './pages/StudentRegistrationsPage';
 import OrganizerAttendancePage from './pages/OrganizerAttendancePage';
 import NotificationsPage from './pages/NotificationsPage';
 import AdminFeedbackPage from './pages/AdminFeedbackPage';
+import StudentRecommendationsPage from './pages/StudentRecommendationsPage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -58,7 +59,7 @@ function App() {
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/student/events" element={<EventsPage />} />
               <Route path="/student/events/:id" element={<EventDetailPage />} />
-              <Route path="/student/recommendations" element={<StudentDashboard />} />
+              <Route path="/student/recommendations" element={<StudentRecommendationsPage />} />
               <Route path="/student/registrations" element={<StudentRegistrationsPage />} />
               <Route path="/student/calendar" element={<StudentDashboard />} />
               <Route path="/student/certificates" element={<StudentDashboard />} />

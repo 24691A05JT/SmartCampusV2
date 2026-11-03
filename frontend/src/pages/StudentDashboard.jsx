@@ -1,14 +1,45 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../services/apiClient';
 import { Calendar, Ticket, Award, Sparkles, Compass, Clock, ArrowRight } from 'lucide-react';
 import StatCard from '../components/common/StatCard';
 import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
-import EmptyState from '../components/common/EmptyState';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import { Link } from 'react-router-dom';
 
 export const StudentDashboard = () => {
   const { user } = useAuth();
+
+  const [recommendations, setRecommendations] = useState([]);
+  const [recLoading, setRecLoading] = useState(true);
+  const [totalEligible, setTotalEligible] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchTopRecommendations = async () => {
+      try {
+        setRecLoading(true);
+        const res = await apiClient.get('/recommendations', { params: { limit: 3 } });
+        if (isMounted) {
+          const items = Array.isArray(res.data) ? res.data : res.data?.recommendations || [];
+          setRecommendations(items);
+          setTotalEligible(res.meta?.totalEligible ?? items.length);
+        }
+      } catch (err) {
+        console.warn('Could not load student recommendations snapshot:', err);
+      } finally {
+        if (isMounted) setRecLoading(false);
+      }
+    };
+
+    fetchTopRecommendations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -64,9 +95,9 @@ export const StudentDashboard = () => {
         />
         <StatCard
           title="Recommended Matches"
-          value="5"
+          value={String(totalEligible)}
           icon={Sparkles}
-          trend="95% match score"
+          trend="Personalized matches"
           accentColor="sky"
         />
       </div>
@@ -157,26 +188,64 @@ export const StudentDashboard = () => {
               </Link>
             }
           >
-            <div className="space-y-4">
-              <div className="p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-2xl">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <Badge variant="primary" size="sm" hasDot>96% Match</Badge>
-                  <span className="text-[11px] text-indigo-400 font-semibold">CSE Department</span>
-                </div>
-                <h5 className="text-sm font-bold text-white">Quantum Computing & Algorithms Seminar</h5>
-                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                  "Recommended because this event matches your CSE department and your interest in AI/ML."
-                </p>
-                <div className="mt-3 pt-3 border-t border-indigo-500/10 flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Nov 22 • 02:00 PM</span>
-                  <Link to="/events">
-                    <span className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
-                      Register <ArrowRight className="w-3 h-3" />
-                    </span>
-                  </Link>
-                </div>
+            {recLoading ? (
+              <div className="space-y-3">
+                <SkeletonLoader height="90px" className="rounded-2xl" />
+                <SkeletonLoader height="90px" className="rounded-2xl" />
               </div>
-            </div>
+            ) : recommendations.length === 0 ? (
+              <div className="p-6 text-center text-slate-400 text-xs bg-slate-950/40 rounded-2xl border border-slate-800">
+                <p>No upcoming matches found.</p>
+                <Link to="/events" className="mt-2 inline-block text-indigo-400 hover:text-indigo-300 font-semibold">
+                  Browse all events &rarr;
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recommendations.slice(0, 2).map((rec) => {
+                  const eventDate = rec.event?.date
+                    ? new Date(rec.event.date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                      })
+                    : 'Upcoming';
+
+                  return (
+                    <div
+                      key={rec.event._id}
+                      className="p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-2xl hover:border-indigo-500/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge
+                          variant={rec.score >= 80 ? 'success' : rec.score >= 60 ? 'primary' : 'neutral'}
+                          size="sm"
+                          hasDot
+                        >
+                          {rec.score}% Match
+                        </Badge>
+                        <span className="text-[11px] text-indigo-400 font-semibold truncate max-w-[130px]">
+                          {rec.event.category}
+                        </span>
+                      </div>
+                      <h5 className="text-sm font-bold text-white line-clamp-1">{rec.event.title}</h5>
+                      <p className="text-xs text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
+                        {rec.reasons?.[0] ? `"${rec.reasons[0]}"` : rec.event.description}
+                      </p>
+                      <div className="mt-3 pt-3 border-t border-indigo-500/10 flex items-center justify-between text-xs">
+                        <span className="text-slate-400">
+                          {eventDate} • {rec.event.startTime || 'TBD'}
+                        </span>
+                        <Link to={`/events/${rec.event._id}`}>
+                          <span className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
+                            Details <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </Card>
         </div>
       </div>

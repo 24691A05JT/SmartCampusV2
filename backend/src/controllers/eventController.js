@@ -366,6 +366,7 @@ export const updateEvent = async (req, res, next) => {
     if (venue) event.venue = proposedVenue;
     if (registrationDeadline) event.registrationDeadline = new Date(registrationDeadline);
     if (bannerImage !== undefined) event.bannerImage = bannerImage;
+    if (req.body.isCancelled !== undefined) event.isCancelled = Boolean(req.body.isCancelled);
 
     // Status transition handling
     if (status) {

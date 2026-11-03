@@ -11,6 +11,7 @@ import registrationRoutes from './routes/registrationRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import recommendationRoutes from './routes/recommendationRoutes.js';
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.use('/api/registrations', registrationRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 // Central 404 handler
 app.use(notFoundHandler);
