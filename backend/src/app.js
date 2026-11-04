@@ -13,6 +13,7 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import certificateRoutes from './routes/certificateRoutes.js';
 
 const app = express();
 
@@ -98,6 +99,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/certificates', certificateRoutes);
 
 // Central 404 handler
 app.use(notFoundHandler);

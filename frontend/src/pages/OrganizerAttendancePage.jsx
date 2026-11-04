@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   ArrowLeft,
   ChevronDown,
-  RefreshCw
+  RefreshCw,
+  Award
 } from 'lucide-react';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
@@ -49,6 +50,8 @@ export const OrganizerAttendancePage = () => {
   // Local modified attendance map for editing: studentId -> { status, remarks, dirty }
   const [modifiedAttendance, setModifiedAttendance] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isIssuingCertificates, setIsIssuingCertificates] = useState(false);
+  const [issuingStudentId, setIssuingStudentId] = useState(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -242,6 +245,43 @@ export const OrganizerAttendancePage = () => {
     addToast('Attendance roster exported successfully.', 'success');
   };
 
+  // Issue Single Certificate for Attendee
+  const handleSingleIssueCertificate = async (studentId) => {
+    if (!selectedEventId || !studentId) return;
+    setIssuingStudentId(studentId);
+    try {
+      const res = await apiClient.post('/certificates/generate/single', {
+        eventId: selectedEventId,
+        studentId
+      });
+      addToast(`Certificate ${res.data.certificateId} issued successfully!`, 'success');
+    } catch (err) {
+      console.error('Single cert issue error:', err);
+      addToast(err.response?.data?.message || 'Failed to issue certificate.', 'error');
+    } finally {
+      setIssuingStudentId(null);
+    }
+  };
+
+  // Batch Issue Certificates for all Present Attendees
+  const handleBatchIssueCertificates = async () => {
+    if (!selectedEventId) return;
+    setIsIssuingCertificates(true);
+    try {
+      const res = await apiClient.post(`/certificates/generate/batch/${selectedEventId}`);
+      const data = res.data;
+      addToast(
+        `Batch generation completed: ${data.generatedCount} issued, ${data.alreadyIssuedCount} already had certificates.`,
+        'success'
+      );
+    } catch (err) {
+      console.error('Batch cert issue error:', err);
+      addToast(err.response?.data?.message || 'Failed to generate batch certificates.', 'error');
+    } finally {
+      setIsIssuingCertificates(false);
+    }
+  };
+
   // Filtered Participants List
   const filteredParticipants = useMemo(() => {
     if (!rosterData?.participants) return [];
@@ -363,6 +403,18 @@ export const OrganizerAttendancePage = () => {
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Export CSV</span>
+              </Button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleBatchIssueCertificates}
+                disabled={isIssuingCertificates || stats?.presentCount === 0}
+                className="gap-2 text-xs bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white border-0 shadow-md shadow-indigo-600/20"
+                title="Issue certificates to all verified present attendees"
+              >
+                <Award className="w-3.5 h-3.5" />
+                <span>{isIssuingCertificates ? 'Generating...' : 'Issue Batch Certificates'}</span>
               </Button>
 
               <Button
@@ -521,6 +573,7 @@ export const OrganizerAttendancePage = () => {
                   <th className="py-3.5 px-4">Ticket Code</th>
                   <th className="py-3.5 px-4">Attendance Status</th>
                   <th className="py-3.5 px-4">Remarks</th>
+                  <th className="py-3.5 px-4 text-center">Certificate</th>
                   <th className="py-3.5 px-4 text-right">Audit Info</th>
                 </tr>
               </thead>
@@ -614,6 +667,24 @@ export const OrganizerAttendancePage = () => {
                           placeholder="Optional remarks..."
                           className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                         />
+                      </td>
+
+                      {/* Certificate Single Action */}
+                      <td className="py-3.5 px-4 text-center">
+                        {current.status === 'present' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSingleIssueCertificate(studentId)}
+                            disabled={issuingStudentId === studentId}
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 border border-indigo-500/30 flex items-center gap-1 mx-auto transition"
+                            title="Issue certificate"
+                          >
+                            <Award className="w-3.5 h-3.5 text-indigo-400" />
+                            <span>{issuingStudentId === studentId ? 'Issuing...' : 'Issue Cert'}</span>
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-slate-500 italic">Ineligible</span>
+                        )}
                       </td>
 
                       {/* Audit Info */}

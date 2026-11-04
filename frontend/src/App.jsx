@@ -21,8 +21,11 @@ import OrganizerAttendancePage from './pages/OrganizerAttendancePage';
 import NotificationsPage from './pages/NotificationsPage';
 import AdminFeedbackPage from './pages/AdminFeedbackPage';
 import StudentRecommendationsPage from './pages/StudentRecommendationsPage';
+import StudentCertificatesPage from './pages/StudentCertificatesPage';
 import OrganizerAnalyticsPage from './pages/OrganizerAnalyticsPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
+import AdminCertificatesPage from './pages/AdminCertificatesPage';
+import VerifyCertificatePage from './pages/VerifyCertificatePage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -47,7 +50,8 @@ function App() {
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/recommendations" element={<DemoFoundationPage />} />
-              <Route path="/verify" element={<DemoFoundationPage />} />
+              <Route path="/verify/:certificateId" element={<VerifyCertificatePage />} />
+              <Route path="/verify" element={<VerifyCertificatePage />} />
             </Route>
 
             {/* Student Protected Routes */}
@@ -64,7 +68,7 @@ function App() {
               <Route path="/student/recommendations" element={<StudentRecommendationsPage />} />
               <Route path="/student/registrations" element={<StudentRegistrationsPage />} />
               <Route path="/student/calendar" element={<StudentDashboard />} />
-              <Route path="/student/certificates" element={<StudentDashboard />} />
+              <Route path="/student/certificates" element={<StudentCertificatesPage />} />
             </Route>
 
             {/* Organizer Protected Routes */}
@@ -95,7 +99,7 @@ function App() {
               <Route path="/admin/attendance" element={<OrganizerAttendancePage />} />
               <Route path="/admin/users" element={<AdminDashboard />} />
               <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
-              <Route path="/admin/certificates" element={<AdminDashboard />} />
+              <Route path="/admin/certificates" element={<AdminCertificatesPage />} />
               <Route path="/admin/audit-logs" element={<AdminDashboard />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             </Route>
