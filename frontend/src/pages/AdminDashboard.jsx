@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../services/apiClient';
 import {
   Users,
   Calendar,
@@ -8,16 +10,65 @@ import {
   ShieldAlert,
   BarChart3,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Clock,
+  MapPin
 } from 'lucide-react';
 import StatCard from '../components/common/StatCard';
 import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import EmptyState from '../components/common/EmptyState';
 import { Link } from 'react-router-dom';
 
 export const AdminDashboard = () => {
   const { user } = useAuth();
+  const [analytics, setAnalytics] = useState(null);
+  const [pendingEvents, setPendingEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAdminDashboard = async () => {
+      try {
+        setLoading(true);
+        const [analyticsRes, pendingRes] = await Promise.allSettled([
+          apiClient.get('/analytics/admin'),
+          apiClient.get('/events', { params: { status: 'pending', limit: 3 } })
+        ]);
+
+        if (isMounted) {
+          if (analyticsRes.status === 'fulfilled') {
+            setAnalytics(analyticsRes.value.data);
+          }
+          if (pendingRes.status === 'fulfilled') {
+            const list = Array.isArray(pendingRes.value.data)
+              ? pendingRes.value.data
+              : pendingRes.value.data?.events || [];
+            setPendingEvents(list);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load admin dashboard metrics:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchAdminDashboard();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const summary = analytics?.summary || {
+    totalStudents: 0,
+    totalOrganizers: 0,
+    pendingEvents: 0,
+    totalCertificatesIssued: 0
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -38,7 +89,12 @@ export const AdminDashboard = () => {
         <div className="flex items-center gap-3">
           <Link to="/admin/events">
             <Button variant="primary" size="md" leftIcon={<CheckCircle className="w-4 h-4" />}>
-              Review Submissions (4)
+              Review Submissions ({loading ? '...' : summary.pendingEvents})
+            </Button>
+          </Link>
+          <Link to="/admin/analytics">
+            <Button variant="glass" size="md" leftIcon={<BarChart3 className="w-4 h-4" />}>
+              Campus Analytics
             </Button>
           </Link>
           <Link to="/admin/users">
@@ -53,28 +109,28 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Registered Students"
-          value="2,410"
+          value={loading ? '...' : String(summary.totalStudents)}
           icon={Users}
-          trend="+14% this month"
+          trend={`${summary.totalStudents > 0 ? summary.totalStudents : 0} enrolled accounts`}
           accentColor="indigo"
         />
         <StatCard
           title="Campus Faculty Organizers"
-          value="68"
+          value={loading ? '...' : String(summary.totalOrganizers)}
           icon={ShieldCheck}
-          trend="Across 8 Departments"
+          trend="Authorized event hosts"
           accentColor="sky"
         />
         <StatCard
           title="Pending Approvals"
-          value="4"
+          value={loading ? '...' : String(summary.pendingEvents)}
           icon={AlertTriangle}
-          trend="Requires compliance check"
+          trend={summary.pendingEvents > 0 ? 'Requires compliance check' : 'Queue clear'}
           accentColor="amber"
         />
         <StatCard
           title="Verifiable Certificates Issued"
-          value="1,240"
+          value={loading ? '...' : String(summary.totalCertificatesIssued)}
           icon={Award}
           trend="Cryptographically signed"
           accentColor="emerald"
@@ -86,36 +142,78 @@ export const AdminDashboard = () => {
         title="Pending Event Approval Submissions"
         subtitle="Review event details, venue allocation, and conflict checks before granting approval"
         headerAction={
-          <Link to="/admin/events">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
-              View Queue
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/admin/analytics">
+              <Button variant="ghost" size="sm" rightIcon={<BarChart3 className="w-4 h-4" />}>
+                Analytics Deep Dive
+              </Button>
+            </Link>
+            <Link to="/admin/events">
+              <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                View Queue
+              </Button>
+            </Link>
+          </div>
         }
       >
-        <div className="space-y-4">
-          <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Badge variant="warning" size="sm" hasDot>Pending Review</Badge>
-                <span className="text-xs text-slate-400">Auditorium A • Nov 25, 2026</span>
-              </div>
-              <h4 className="text-base font-bold text-white">Annual Inter-University Hackathon 2026</h4>
-              <p className="text-xs text-slate-400 mt-1">
-                Submitted by: Prof. K. Raman (CSE Department) • Target: All Departments • Capacity: 300
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                Inspect Schedule
-              </Button>
-              <Button variant="primary" size="sm">
-                Approve
-              </Button>
-            </div>
+        {loading ? (
+          <div className="space-y-3">
+            <SkeletonLoader height="70px" className="rounded-xl" />
+            <SkeletonLoader height="70px" className="rounded-xl" />
           </div>
-        </div>
+        ) : pendingEvents.length === 0 ? (
+          <EmptyState
+            icon={CheckCircle}
+            title="All Event Submissions Reviewed"
+            description="There are no pending events requiring administrative moderation at this time."
+            action={
+              <Link to="/admin/events">
+                <Button variant="outline" size="sm">
+                  View Full Event Catalog
+                </Button>
+              </Link>
+            }
+            className="py-10"
+          />
+        ) : (
+          <div className="space-y-4">
+            {pendingEvents.map((ev) => {
+              const evDate = ev.date
+                ? new Date(ev.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                : 'Upcoming';
+
+              return (
+                <div
+                  key={ev._id}
+                  className="p-4 bg-slate-950/60 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="warning" size="sm" hasDot>Pending Review</Badge>
+                      <span className="text-xs text-slate-400">{ev.venue} • {evDate}</span>
+                    </div>
+                    <h4 className="text-base font-bold text-white">{ev.title}</h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Submitted by: {ev.organizer?.name || 'Faculty Member'} ({ev.organizer?.department || 'Department'}) • Capacity: {ev.capacity}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link to="/admin/events">
+                      <Button variant="primary" size="sm">
+                        Review in Queue
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Card>
     </div>
   );

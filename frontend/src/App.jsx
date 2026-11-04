@@ -21,6 +21,8 @@ import OrganizerAttendancePage from './pages/OrganizerAttendancePage';
 import NotificationsPage from './pages/NotificationsPage';
 import AdminFeedbackPage from './pages/AdminFeedbackPage';
 import StudentRecommendationsPage from './pages/StudentRecommendationsPage';
+import OrganizerAnalyticsPage from './pages/OrganizerAnalyticsPage';
+import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -77,7 +79,7 @@ function App() {
               <Route path="/organizer/events" element={<OrganizerEventsPage />} />
               <Route path="/organizer/events/new" element={<OrganizerEventsPage />} />
               <Route path="/organizer/attendance" element={<OrganizerAttendancePage />} />
-              <Route path="/organizer/analytics" element={<OrganizerDashboard />} />
+              <Route path="/organizer/analytics" element={<OrganizerAnalyticsPage />} />
             </Route>
 
             {/* Admin Protected Routes */}
@@ -95,7 +97,7 @@ function App() {
               <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
               <Route path="/admin/certificates" element={<AdminDashboard />} />
               <Route path="/admin/audit-logs" element={<AdminDashboard />} />
-              <Route path="/admin/analytics" element={<AdminDashboard />} />
+              <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             </Route>
 
             {/* Common Protected Profile Route */}
