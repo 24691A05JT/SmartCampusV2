@@ -12,7 +12,9 @@ import {
   ArrowRight,
   ShieldCheck,
   Clock,
-  MapPin
+  MapPin,
+  Activity,
+  Ticket
 } from 'lucide-react';
 import StatCard from '../components/common/StatCard';
 import Card from '../components/common/Card';
@@ -24,7 +26,7 @@ import { Link } from 'react-router-dom';
 
 export const AdminDashboard = () => {
   const { user } = useAuth();
-  const [analytics, setAnalytics] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,19 +35,19 @@ export const AdminDashboard = () => {
     const fetchAdminDashboard = async () => {
       try {
         setLoading(true);
-        const [analyticsRes, pendingRes] = await Promise.allSettled([
-          apiClient.get('/analytics/admin'),
+        const [adminRes, pendingRes] = await Promise.allSettled([
+          apiClient.get('/admin/dashboard'),
           apiClient.get('/events', { params: { status: 'pending', limit: 3 } })
         ]);
 
         if (isMounted) {
-          if (analyticsRes.status === 'fulfilled') {
-            setAnalytics(analyticsRes.value.data);
+          if (adminRes.status === 'fulfilled' && adminRes.value?.success) {
+            setDashboardData(adminRes.value.data);
           }
           if (pendingRes.status === 'fulfilled') {
-            const list = Array.isArray(pendingRes.value.data)
-              ? pendingRes.value.data
-              : pendingRes.value.data?.events || [];
+            const list = Array.isArray(pendingRes.value)
+              ? pendingRes.value
+              : pendingRes.value?.data?.events || pendingRes.value?.events || [];
             setPendingEvents(list);
           }
         }
@@ -63,11 +65,38 @@ export const AdminDashboard = () => {
     };
   }, []);
 
-  const summary = analytics?.summary || {
+  const summary = dashboardData?.summary || {
     totalStudents: 0,
     totalOrganizers: 0,
     pendingEvents: 0,
-    totalCertificatesIssued: 0
+    totalCertificatesIssued: 0,
+    suspendedUsers: 0,
+    totalAuditLogs: 0
+  };
+
+  const recentLogs = dashboardData?.recentLogs || [];
+
+  const getActionVariant = (action = '') => {
+    if (action.includes('DEACTIVATED') || action.includes('REVOKED') || action.includes('CANCELLED')) {
+      return 'danger';
+    }
+    if (action.includes('APPROVED') || action.includes('REACTIVATED') || action.includes('ISSUED')) {
+      return 'success';
+    }
+    if (action.includes('REJECTED') || action.includes('UPDATE') || action.includes('WARNING')) {
+      return 'warning';
+    }
+    return 'primary';
+  };
+
+  const formatLogDate = (dateStr) => {
+    if (!dateStr) return 'Recent';
+    return new Date(dateStr).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -86,20 +115,30 @@ export const AdminDashboard = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Link to="/admin/events">
-            <Button variant="primary" size="md" leftIcon={<CheckCircle className="w-4 h-4" />}>
+            <Button variant="primary" size="sm" leftIcon={<CheckCircle className="w-4 h-4" />}>
               Review Submissions ({loading ? '...' : summary.pendingEvents})
             </Button>
           </Link>
-          <Link to="/admin/analytics">
-            <Button variant="glass" size="md" leftIcon={<BarChart3 className="w-4 h-4" />}>
-              Campus Analytics
+          <Link to="/admin/users">
+            <Button variant="outline" size="sm" leftIcon={<Users className="w-4 h-4" />}>
+              User Governance
             </Button>
           </Link>
-          <Link to="/admin/users">
-            <Button variant="outline" size="md" leftIcon={<Users className="w-4 h-4" />}>
-              User Governance
+          <Link to="/admin/registrations">
+            <Button variant="outline" size="sm" leftIcon={<Ticket className="w-4 h-4" />}>
+              Registrations
+            </Button>
+          </Link>
+          <Link to="/admin/audit-logs">
+            <Button variant="outline" size="sm" leftIcon={<ShieldAlert className="w-4 h-4" />}>
+              Audit Trail
+            </Button>
+          </Link>
+          <Link to="/admin/analytics">
+            <Button variant="glass" size="sm" leftIcon={<BarChart3 className="w-4 h-4" />}>
+              Analytics
             </Button>
           </Link>
         </div>
@@ -125,96 +164,144 @@ export const AdminDashboard = () => {
           title="Pending Approvals"
           value={loading ? '...' : String(summary.pendingEvents)}
           icon={AlertTriangle}
-          trend={summary.pendingEvents > 0 ? 'Requires compliance check' : 'Queue clear'}
+          trend={summary.pendingEvents > 0 ? 'Requires moderation' : 'Queue clear'}
           accentColor="amber"
         />
         <StatCard
-          title="Verifiable Certificates Issued"
-          value={loading ? '...' : String(summary.totalCertificatesIssued)}
-          icon={Award}
-          trend="Cryptographically signed"
+          title="Audit Trail Events"
+          value={loading ? '...' : String(summary.totalAuditLogs)}
+          icon={Activity}
+          trend={`${summary.suspendedUsers} suspended accounts`}
           accentColor="emerald"
         />
       </div>
 
-      {/* Submissions Requiring Immediate Review */}
-      <Card
-        title="Pending Event Approval Submissions"
-        subtitle="Review event details, venue allocation, and conflict checks before granting approval"
-        headerAction={
-          <div className="flex items-center gap-3">
-            <Link to="/admin/analytics">
-              <Button variant="ghost" size="sm" rightIcon={<BarChart3 className="w-4 h-4" />}>
-                Analytics Deep Dive
-              </Button>
-            </Link>
+      {/* Two-Column Grid: Pending Approvals & Live Audit Stream */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Pending Submissions */}
+        <Card
+          title="Pending Event Approvals"
+          subtitle="Proposals awaiting administrative compliance check"
+          headerAction={
             <Link to="/admin/events">
               <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
                 View Queue
               </Button>
             </Link>
-          </div>
-        }
-      >
-        {loading ? (
-          <div className="space-y-3">
-            <SkeletonLoader height="70px" className="rounded-xl" />
-            <SkeletonLoader height="70px" className="rounded-xl" />
-          </div>
-        ) : pendingEvents.length === 0 ? (
-          <EmptyState
-            icon={CheckCircle}
-            title="All Event Submissions Reviewed"
-            description="There are no pending events requiring administrative moderation at this time."
-            action={
-              <Link to="/admin/events">
-                <Button variant="outline" size="sm">
-                  View Full Event Catalog
-                </Button>
-              </Link>
-            }
-            className="py-10"
-          />
-        ) : (
-          <div className="space-y-4">
-            {pendingEvents.map((ev) => {
-              const evDate = ev.date
-                ? new Date(ev.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })
-                : 'Upcoming';
+          }
+        >
+          {loading ? (
+            <div className="space-y-3">
+              <SkeletonLoader height="70px" className="rounded-xl" />
+              <SkeletonLoader height="70px" className="rounded-xl" />
+            </div>
+          ) : pendingEvents.length === 0 ? (
+            <EmptyState
+              icon={CheckCircle}
+              title="All Submissions Clear"
+              description="No pending events require moderation at this time."
+              action={
+                <Link to="/admin/events">
+                  <Button variant="outline" size="sm">
+                    View Event Catalog
+                  </Button>
+                </Link>
+              }
+              className="py-8"
+            />
+          ) : (
+            <div className="space-y-3">
+              {pendingEvents.map((ev) => {
+                const evDate = ev.date
+                  ? new Date(ev.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })
+                  : 'Upcoming';
 
-              return (
-                <div
-                  key={ev._id}
-                  className="p-4 bg-slate-950/60 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                >
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="warning" size="sm" hasDot>Pending Review</Badge>
-                      <span className="text-xs text-slate-400">{ev.venue} • {evDate}</span>
+                return (
+                  <div
+                    key={ev._id}
+                    className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <Badge variant="warning" size="sm" hasDot>Pending</Badge>
+                        <span className="text-xs text-slate-400 truncate">{ev.venue} • {evDate}</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-white truncate">{ev.title}</h4>
+                      <p className="text-xs text-slate-500">
+                        {ev.organizer?.name || 'Faculty Member'}
+                      </p>
                     </div>
-                    <h4 className="text-base font-bold text-white">{ev.title}</h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Submitted by: {ev.organizer?.name || 'Faculty Member'} ({ev.organizer?.department || 'Department'}) • Capacity: {ev.capacity}
-                    </p>
-                  </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Link to="/admin/events">
+                    <Link to="/admin/events" className="shrink-0">
                       <Button variant="primary" size="sm">
-                        Review in Queue
+                        Review
                       </Button>
                     </Link>
                   </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
+        {/* Live Governance Audit Stream */}
+        <Card
+          title="Recent Governance Audit Activity"
+          subtitle="Real-time chronological log of administrative interventions"
+          headerAction={
+            <Link to="/admin/audit-logs">
+              <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                Full Audit Trail
+              </Button>
+            </Link>
+          }
+        >
+          {loading ? (
+            <div className="space-y-3">
+              <SkeletonLoader height="70px" className="rounded-xl" />
+              <SkeletonLoader height="70px" className="rounded-xl" />
+            </div>
+          ) : recentLogs.length === 0 ? (
+            <EmptyState
+              icon={ShieldAlert}
+              title="No Audit Records"
+              description="No recent administrative actions recorded."
+              className="py-8"
+            />
+          ) : (
+            <div className="space-y-3">
+              {recentLogs.map((log) => (
+                <div
+                  key={log._id}
+                  className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <Badge variant={getActionVariant(log.action)} size="sm">
+                        {log.action}
+                      </Badge>
+                      <span className="text-xs text-slate-500">{formatLogDate(log.createdAt)}</span>
+                    </div>
+                    <p className="text-xs text-slate-300">
+                      By <strong className="text-white">{log.performedBy?.name || 'Admin'}</strong> on{' '}
+                      <span className="text-indigo-300">{log.targetType || 'System'}</span>
+                    </p>
+                  </div>
+
+                  <Link to="/admin/audit-logs" className="shrink-0">
+                    <Button variant="ghost" size="sm">
+                      Inspect
+                    </Button>
+                  </Link>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 };

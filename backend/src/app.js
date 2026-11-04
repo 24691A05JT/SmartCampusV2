@@ -14,6 +14,7 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import certificateRoutes from './routes/certificateRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 
@@ -100,6 +101,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/certificates', certificateRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Central 404 handler
 app.use(notFoundHandler);

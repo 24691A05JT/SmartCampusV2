@@ -25,6 +25,9 @@ import StudentCertificatesPage from './pages/StudentCertificatesPage';
 import OrganizerAnalyticsPage from './pages/OrganizerAnalyticsPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AdminCertificatesPage from './pages/AdminCertificatesPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminAuditLogsPage from './pages/AdminAuditLogsPage';
+import AdminRegistrationsPage from './pages/AdminRegistrationsPage';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
 import StudentDashboard from './pages/StudentDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
@@ -97,10 +100,11 @@ function App() {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/events" element={<AdminEventsPage />} />
               <Route path="/admin/attendance" element={<OrganizerAttendancePage />} />
-              <Route path="/admin/users" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/registrations" element={<AdminRegistrationsPage />} />
               <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
               <Route path="/admin/certificates" element={<AdminCertificatesPage />} />
-              <Route path="/admin/audit-logs" element={<AdminDashboard />} />
+              <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             </Route>
 

@@ -65,6 +65,7 @@ export const DashboardLayout = () => {
         { name: 'Command Center', path: '/admin', icon: LayoutDashboard },
         { name: 'Event Approvals', path: '/admin/events', icon: CheckCircle },
         { name: 'User Governance', path: '/admin/users', icon: Users },
+        { name: 'Registrations', path: '/admin/registrations', icon: Ticket },
         { name: 'Feedback Moderation', path: '/admin/feedback', icon: MessageSquare },
         { name: 'Certificate Registry', path: '/admin/certificates', icon: Award },
         { name: 'Audit Trail', path: '/admin/audit-logs', icon: ShieldAlert },
