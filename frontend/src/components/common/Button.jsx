@@ -21,6 +21,8 @@ export const Button = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,
+  loading = false,
+  loadingText,
   disabled = false,
   fullWidth = false,
   leftIcon = null,
@@ -31,12 +33,15 @@ export const Button = ({
 }) => {
   const variantClasses = VARIANTS[variant] || VARIANTS.primary;
   const sizeClasses = SIZES[size] || SIZES.md;
-  const isButtonDisabled = disabled || isLoading;
+  const isBusy = Boolean(isLoading || loading);
+  const isButtonDisabled = Boolean(disabled || isBusy);
 
   return (
     <button
       type={type}
       disabled={isButtonDisabled}
+      aria-busy={isBusy ? 'true' : undefined}
+      aria-disabled={isButtonDisabled ? 'true' : undefined}
       onClick={onClick}
       className={`relative inline-flex items-center justify-center transition-all duration-200 select-none outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98] ${
         fullWidth ? 'w-full' : ''
@@ -45,10 +50,10 @@ export const Button = ({
       } ${variantClasses} ${sizeClasses} ${className}`}
       {...props}
     >
-      {isLoading ? (
+      {isBusy ? (
         <>
-          <Loader2 className="w-4 h-4 animate-spin text-current" />
-          <span>Loading...</span>
+          <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" aria-hidden="true" />
+          <span>{loadingText || children || 'Loading...'}</span>
         </>
       ) : (
         <>

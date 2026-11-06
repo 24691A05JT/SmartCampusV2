@@ -99,9 +99,14 @@ export const EventsPage = () => {
       if (dateFrom) params.dateFrom = dateFrom;
 
       const res = await apiClient.get('/events', { params });
-      setEvents(res.data.data || []);
-      if (res.data.pagination) {
-        setPagination(res.data.pagination);
+      const eventsList = Array.isArray(res?.data)
+        ? res.data
+        : (Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
+      const paginationData = res?.pagination || res?.data?.pagination || null;
+
+      setEvents(eventsList);
+      if (paginationData) {
+        setPagination(paginationData);
       }
     } catch (err) {
       console.error('Failed to fetch events:', err);

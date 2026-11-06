@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { useId, forwardRef } from 'react';
 import { ChevronDown, AlertCircle } from 'lucide-react';
 
 export const Select = forwardRef(
@@ -21,14 +21,18 @@ export const Select = forwardRef(
     },
     ref
   ) => {
-    const selectId = id || name || Math.random().toString(36).substring(2, 9);
+    const reactId = useId();
+    const selectId = id || name || `select-${reactId}`;
+    const errorId = `${selectId}-error`;
+    const helperId = `${selectId}-helper`;
+    const ariaDescribedBy = error ? errorId : helperText ? helperId : undefined;
 
     return (
       <div className="flex flex-col gap-1.5 w-full text-left">
         {label && (
           <label htmlFor={selectId} className="text-xs font-semibold uppercase tracking-wider text-slate-300">
             {label}
-            {required && <span className="text-rose-500 ml-1">*</span>}
+            {required && <span className="text-rose-500 ml-1" aria-hidden="true">*</span>}
           </label>
         )}
 
@@ -41,6 +45,9 @@ export const Select = forwardRef(
             onChange={onChange}
             disabled={disabled}
             required={required}
+            aria-invalid={Boolean(error)}
+            aria-describedby={ariaDescribedBy}
+            aria-required={required ? 'true' : undefined}
             className={`w-full px-4 py-2.5 pr-10 bg-slate-900/90 text-slate-100 text-sm rounded-xl border appearance-none transition-all duration-200 outline-none cursor-pointer ${
               error
                 ? 'border-rose-500/80 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
@@ -66,18 +73,18 @@ export const Select = forwardRef(
               : children}
           </select>
 
-          <span className="absolute right-3.5 text-slate-400 pointer-events-none">
+          <span className="absolute right-3.5 text-slate-400 pointer-events-none" aria-hidden="true">
             <ChevronDown className="w-4 h-4" />
           </span>
         </div>
 
         {error ? (
-          <p className="flex items-center gap-1.5 text-xs text-rose-400 font-medium mt-0.5">
-            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <p id={errorId} role="alert" aria-live="polite" className="flex items-center gap-1.5 text-xs text-rose-400 font-medium mt-0.5">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>{error}</span>
           </p>
         ) : (
-          helperText && <p className="text-xs text-slate-400 mt-0.5">{helperText}</p>
+          helperText && <p id={helperId} className="text-xs text-slate-400 mt-0.5">{helperText}</p>
         )}
       </div>
     );

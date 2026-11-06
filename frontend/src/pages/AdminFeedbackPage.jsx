@@ -105,8 +105,10 @@ export const AdminFeedbackPage = () => {
       {/* Filter and Search Bar */}
       <div className="glass-card rounded-2xl p-4 border border-slate-800 flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
+            id="search-feedback-input"
+            aria-label="Search keywords in reviews"
             type="text"
             value={searchQuery}
             onChange={(e) => {
@@ -121,6 +123,8 @@ export const AdminFeedbackPage = () => {
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Filter className="w-4 h-4 text-slate-400 shrink-0" />
           <select
+            id="rating-filter-select"
+            aria-label="Filter reviews by star rating"
             value={ratingFilter}
             onChange={(e) => {
               setRatingFilter(e.target.value);

@@ -125,6 +125,33 @@ export const StudentRegistrationsPage = () => {
     }
   };
 
+  const TAB_DEFINITIONS = [
+    { id: 'all', label: 'All Registrations', count: registrations.length },
+    { id: 'upcoming', label: 'Upcoming', count: stats.confirmed },
+    { id: 'attended', label: 'Attended', count: stats.attended },
+    { id: 'cancelled', label: 'Cancelled', count: stats.cancelled }
+  ];
+
+  const handleTabKeyDown = (e, index) => {
+    let targetIndex = null;
+    if (e.key === 'ArrowRight') {
+      targetIndex = (index + 1) % TAB_DEFINITIONS.length;
+    } else if (e.key === 'ArrowLeft') {
+      targetIndex = (index - 1 + TAB_DEFINITIONS.length) % TAB_DEFINITIONS.length;
+    } else if (e.key === 'Home') {
+      targetIndex = 0;
+    } else if (e.key === 'End') {
+      targetIndex = TAB_DEFINITIONS.length - 1;
+    }
+
+    if (targetIndex !== null) {
+      e.preventDefault();
+      const nextTab = TAB_DEFINITIONS[targetIndex];
+      setActiveTab(nextTab.id);
+      document.getElementById(`tab-${nextTab.id}`)?.focus();
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300 pb-12">
       {/* Header */}
@@ -178,16 +205,22 @@ export const StudentRegistrationsPage = () => {
 
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/80">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          {[
-            { id: 'all', label: 'All Registrations', count: registrations.length },
-            { id: 'upcoming', label: 'Upcoming', count: stats.confirmed },
-            { id: 'attended', label: 'Attended', count: stats.attended },
-            { id: 'cancelled', label: 'Cancelled', count: stats.cancelled }
-          ].map((tab) => (
+        <div
+          role="tablist"
+          aria-label="Registration status tabs"
+          className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0"
+        >
+          {TAB_DEFINITIONS.map((tab, idx) => (
             <button
               key={tab.id}
+              id={`tab-${tab.id}`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`panel-${tab.id}`}
+              tabIndex={activeTab === tab.id ? 0 : -1}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
+              onKeyDown={(e) => handleTabKeyDown(e, idx)}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
@@ -210,6 +243,8 @@ export const StudentRegistrationsPage = () => {
         <div className="relative min-w-[240px]">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
+            id="search-registrations"
+            aria-label="Search event or ticket"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -219,167 +254,175 @@ export const StudentRegistrationsPage = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
-              <SkeletonLoader height="140px" className="rounded-xl" />
-              <SkeletonLoader height="20px" width="70%" />
-              <SkeletonLoader height="14px" width="40%" />
-            </div>
-          ))}
-        </div>
-      ) : error ? (
-        <div className="p-8 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-center space-y-3">
-          <AlertTriangle className="w-8 h-8 text-rose-400 mx-auto" />
-          <h3 className="text-sm font-bold text-white">Failed to Load Registrations</h3>
-          <p className="text-xs text-rose-300 max-w-md mx-auto">{error}</p>
-          <Button variant="outline" size="sm" onClick={fetchRegistrations}>
-            Try Again
-          </Button>
-        </div>
-      ) : filteredRegistrations.length === 0 ? (
-        <EmptyState
-          icon={Ticket}
-          title={
-            searchQuery
-              ? 'No Matching Registrations Found'
-              : activeTab === 'upcoming'
-              ? 'No Upcoming Event Bookings'
-              : activeTab === 'attended'
-              ? 'No Attended Events Yet'
-              : activeTab === 'cancelled'
-              ? 'No Cancelled Registrations'
-              : 'You Have Not Registered for Any Events Yet'
-          }
-          description={
-            searchQuery
-              ? `No registrations match "${searchQuery}". Clear your search query to see all.`
-              : 'Browse active college events, reserve your seat, and receive an instant entrance boarding pass.'
-          }
-          actionLabel="Browse Events"
-          onAction={() => window.location.assign('/events')}
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRegistrations.map((reg) => {
-            const event = reg.event || {};
-            const isConfirmed = reg.status === 'confirmed';
-            const eventDate = event.date
-              ? new Date(event.date).toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric'
-                })
-              : 'Date TBA';
-
-            const now = new Date();
-            const isPastEvent = event.date ? new Date(event.date) < now : false;
-
-            return (
-              <div
-                key={reg._id}
-                className="glass-card rounded-2xl border border-slate-800/80 overflow-hidden flex flex-col hover:border-slate-700/80 transition-all duration-300 group shadow-lg"
-              >
-                {/* Event Image Banner */}
-                <div className="relative h-40 w-full overflow-hidden bg-slate-900">
-                  {event.bannerImage ? (
-                    <img
-                      src={event.bannerImage}
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-indigo-950 via-slate-900 to-purple-950 text-slate-500">
-                      <Ticket className="w-12 h-12 opacity-30" />
-                    </div>
-                  )}
-
-                  {/* Top Overlay Chips */}
-                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 text-white backdrop-blur border border-white/10">
-                      {event.category || 'Event'}
-                    </span>
-
-                    {/* Status Badge */}
-                    {isConfirmed ? (
-                      <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur">
-                        Confirmed
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 backdrop-blur">
-                        Cancelled
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-mono text-indigo-400 font-bold tracking-wide">
-                        {reg.ticketCode}
-                      </span>
-                      <AttendanceStatusBadge status={reg.attendance?.status || 'unmarked'} />
-                    </div>
-
-                    <Link to={`/events/${event._id}`}>
-                      <h3 className="text-base font-bold text-white hover:text-indigo-400 transition line-clamp-1">
-                        {event.title || 'Untitled Event'}
-                      </h3>
-                    </Link>
-
-                    <div className="space-y-1.5 text-xs text-slate-400 pt-1">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span>{eventDate}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span>
-                          {event.startTime || '10:00'} - {event.endTime || '12:00'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span className="truncate">{event.venue || 'Campus Facility'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center gap-2">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      fullWidth
-                      onClick={() => handleOpenTicket(reg)}
-                      className="gap-1.5 text-xs"
-                    >
-                      <Ticket className="w-3.5 h-3.5" />
-                      <span>View Pass</span>
-                    </Button>
-
-                    {isConfirmed && !isPastEvent && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCancelTarget(reg)}
-                        className="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
-                        title="Cancel Registration"
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                </div>
+      {/* Main Content Area Tabpanel */}
+      <div
+        id={`panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${activeTab}`}
+        tabIndex={0}
+        className="outline-none"
+      >
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
+                <SkeletonLoader height="140px" className="rounded-xl" />
+                <SkeletonLoader height="20px" width="70%" />
+                <SkeletonLoader height="14px" width="40%" />
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : error ? (
+          <div className="p-8 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-center space-y-3">
+            <AlertTriangle className="w-8 h-8 text-rose-400 mx-auto" />
+            <h3 className="text-sm font-bold text-white">Failed to Load Registrations</h3>
+            <p className="text-xs text-rose-300 max-w-md mx-auto">{error}</p>
+            <Button variant="outline" size="sm" onClick={fetchRegistrations}>
+              Try Again
+            </Button>
+          </div>
+        ) : filteredRegistrations.length === 0 ? (
+          <EmptyState
+            icon={Ticket}
+            title={
+              searchQuery
+                ? 'No Matching Registrations Found'
+                : activeTab === 'upcoming'
+                ? 'No Upcoming Event Bookings'
+                : activeTab === 'attended'
+                ? 'No Attended Events Yet'
+                : activeTab === 'cancelled'
+                ? 'No Cancelled Registrations'
+                : 'You Have Not Registered for Any Events Yet'
+            }
+            description={
+              searchQuery
+                ? `No registrations match "${searchQuery}". Clear your search query to see all.`
+                : 'Browse active college events, reserve your seat, and receive an instant entrance boarding pass.'
+            }
+            actionLabel="Browse Events"
+            onAction={() => window.location.assign('/events')}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRegistrations.map((reg) => {
+              const event = reg.event || {};
+              const isConfirmed = reg.status === 'confirmed';
+              const eventDate = event.date
+                ? new Date(event.date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                  })
+                : 'Date TBA';
+
+              const now = new Date();
+              const isPastEvent = event.date ? new Date(event.date) < now : false;
+
+              return (
+                <div
+                  key={reg._id}
+                  className="glass-card rounded-2xl border border-slate-800/80 overflow-hidden flex flex-col hover:border-slate-700/80 transition-all duration-300 group shadow-lg"
+                >
+                  {/* Event Image Banner */}
+                  <div className="relative h-40 w-full overflow-hidden bg-slate-900">
+                    {event.bannerImage ? (
+                      <img
+                        src={event.bannerImage}
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-indigo-950 via-slate-900 to-purple-950 text-slate-500">
+                        <Ticket className="w-12 h-12 opacity-30" />
+                      </div>
+                    )}
+
+                    {/* Top Overlay Chips */}
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                      <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 text-white backdrop-blur border border-white/10">
+                        {event.category || 'Event'}
+                      </span>
+
+                      {/* Status Badge */}
+                      {isConfirmed ? (
+                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur">
+                          Confirmed
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 backdrop-blur">
+                          Cancelled
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-mono text-indigo-400 font-bold tracking-wide">
+                          {reg.ticketCode}
+                        </span>
+                        <AttendanceStatusBadge status={reg.attendance?.status || 'unmarked'} />
+                      </div>
+
+                      <Link to={`/events/${event._id}`}>
+                        <h3 className="text-base font-bold text-white hover:text-indigo-400 transition line-clamp-1">
+                          {event.title || 'Untitled Event'}
+                        </h3>
+                      </Link>
+
+                      <div className="space-y-1.5 text-xs text-slate-400 pt-1">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                          <span>{eventDate}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                          <span>
+                            {event.startTime || '10:00'} - {event.endTime || '12:00'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                          <span className="truncate">{event.venue || 'Campus Facility'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-3 border-t border-slate-800/80 flex items-center gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        fullWidth
+                        onClick={() => handleOpenTicket(reg)}
+                        className="gap-1.5 text-xs"
+                      >
+                        <Ticket className="w-3.5 h-3.5" />
+                        <span>View Pass</span>
+                      </Button>
+
+                      {isConfirmed && !isPastEvent && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCancelTarget(reg)}
+                          className="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                          title="Cancel Registration"
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Ticket Pass Modal */}
       <TicketModal

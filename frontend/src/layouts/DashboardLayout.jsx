@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/apiClient';
@@ -34,6 +34,31 @@ export const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const userDropdownRef = useRef(null);
+
+  // Close user dropdown on click-outside and handle Escape dismiss
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (userDropdownOpen) setUserDropdownOpen(false);
+        if (sidebarOpen) setSidebarOpen(false);
+      }
+    };
+
+    const handleClickOutside = (e) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userDropdownOpen, sidebarOpen]);
 
   useEffect(() => {
     let isMounted = true;
@@ -109,6 +134,14 @@ export const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+      {/* Skip to Content Accessible Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-xl focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
+      >
+        Skip to main content
+      </a>
+
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -119,6 +152,8 @@ export const DashboardLayout = () => {
 
       {/* Sidebar Navigation */}
       <aside
+        id="dashboard-sidebar"
+        aria-label="Workspace navigation"
         className={`fixed top-0 bottom-0 left-0 z-40 w-72 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/80 flex flex-col transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
@@ -223,6 +258,8 @@ export const DashboardLayout = () => {
               type="button"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
+              aria-expanded={sidebarOpen}
+              aria-controls="dashboard-sidebar"
               className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-900 rounded-xl transition-colors cursor-pointer"
             >
               <Menu className="w-6 h-6" />
@@ -250,10 +287,13 @@ export const DashboardLayout = () => {
             </Link>
 
             {/* Profile Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={userDropdownRef}>
               <button
                 type="button"
                 onClick={() => setUserDropdownOpen((prev) => !prev)}
+                aria-expanded={userDropdownOpen}
+                aria-haspopup="menu"
+                aria-controls="user-dropdown-menu"
                 className="flex items-center gap-2.5 p-1.5 pl-3 bg-slate-900/80 hover:bg-slate-900 border border-slate-800/80 rounded-2xl transition-all cursor-pointer"
               >
                 <div className="text-left hidden md:block">
@@ -267,6 +307,9 @@ export const DashboardLayout = () => {
 
               {userDropdownOpen && (
                 <div
+                  id="user-dropdown-menu"
+                  role="menu"
+                  aria-label="User account actions"
                   className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2"
                   onClick={() => setUserDropdownOpen(false)}
                 >
@@ -277,6 +320,7 @@ export const DashboardLayout = () => {
 
                   <Link
                     to="/profile"
+                    role="menuitem"
                     className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
                   >
                     <User className="w-4 h-4 text-slate-400" />
@@ -285,6 +329,7 @@ export const DashboardLayout = () => {
 
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={handleLogout}
                     className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-left cursor-pointer"
                   >
@@ -297,8 +342,8 @@ export const DashboardLayout = () => {
           </div>
         </header>
 
-        {/* Main Routed Page Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        {/* Main Routed Page Area with Focus Target */}
+        <main id="main-content" tabIndex="-1" className="flex-1 outline-none p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
       </div>

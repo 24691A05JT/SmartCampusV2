@@ -475,7 +475,11 @@ export const OrganizerAttendancePage = () => {
 
       {/* Roster Controls: Search & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/80">
-        <div className="flex items-center gap-1.5 overflow-x-auto">
+        <div
+          role="group"
+          aria-label="Filter participants by attendance status"
+          className="flex items-center gap-1.5 overflow-x-auto"
+        >
           {[
             { id: 'all', label: 'All Participants' },
             { id: 'unmarked', label: 'Unmarked' },
@@ -484,6 +488,7 @@ export const OrganizerAttendancePage = () => {
           ].map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setStatusFilter(tab.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 statusFilter === tab.id
@@ -512,6 +517,8 @@ export const OrganizerAttendancePage = () => {
           <div className="relative min-w-[220px]">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
+              id="search-attendance-input"
+              aria-label="Search participant by name or ticket code"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -565,16 +572,17 @@ export const OrganizerAttendancePage = () => {
       ) : (
         <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs" aria-label="Event participant attendance roster">
+              <caption className="sr-only">Roster of registered participants and attendance tracking</caption>
               <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase font-semibold text-[11px] tracking-wider">
                 <tr>
-                  <th className="py-3.5 px-4">Student</th>
-                  <th className="py-3.5 px-4">Department & Year</th>
-                  <th className="py-3.5 px-4">Ticket Code</th>
-                  <th className="py-3.5 px-4">Attendance Status</th>
-                  <th className="py-3.5 px-4">Remarks</th>
-                  <th className="py-3.5 px-4 text-center">Certificate</th>
-                  <th className="py-3.5 px-4 text-right">Audit Info</th>
+                  <th scope="col" className="py-3.5 px-4">Student</th>
+                  <th scope="col" className="py-3.5 px-4">Department & Year</th>
+                  <th scope="col" className="py-3.5 px-4">Ticket Code</th>
+                  <th scope="col" className="py-3.5 px-4">Attendance Status</th>
+                  <th scope="col" className="py-3.5 px-4">Remarks</th>
+                  <th scope="col" className="py-3.5 px-4 text-center">Certificate</th>
+                  <th scope="col" className="py-3.5 px-4 text-right">Audit Info</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
@@ -627,6 +635,7 @@ export const OrganizerAttendancePage = () => {
                           <button
                             type="button"
                             onClick={() => handleStatusChange(studentId, 'present')}
+                            aria-pressed={current.status === 'present'}
                             className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition ${
                               current.status === 'present'
                                 ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
@@ -640,6 +649,7 @@ export const OrganizerAttendancePage = () => {
                           <button
                             type="button"
                             onClick={() => handleStatusChange(studentId, 'absent')}
+                            aria-pressed={current.status === 'absent'}
                             className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition ${
                               current.status === 'absent'
                                 ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'

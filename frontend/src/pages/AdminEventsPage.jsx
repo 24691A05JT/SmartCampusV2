@@ -26,11 +26,11 @@ import apiClient from '../services/apiClient';
 
 export const AdminEventsPage = () => {
   const toast = useToast();
-  const addToast = (msg, type = 'info') => {
+  const addToast = useCallback((msg, type = 'info') => {
     if (typeof toast?.addToast === 'function') toast.addToast(msg, type);
     else if (typeof toast?.[type] === 'function') toast[type](msg);
     else if (typeof toast?.showToast === 'function') toast.showToast({ type, message: msg });
-  };
+  }, [toast]);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,10 @@ export const AdminEventsPage = () => {
     setLoading(true);
     try {
       const res = await apiClient.get('/events/admin/all');
-      setEvents(res.data.data || []);
+      const eventsList = Array.isArray(res?.data)
+        ? res.data
+        : (Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
+      setEvents(eventsList);
     } catch (err) {
       console.error('Failed to fetch admin events:', err);
       addToast('Could not load administrative events queue.', 'error');
@@ -73,7 +76,7 @@ export const AdminEventsPage = () => {
       setApproveTarget(null);
       fetchAdminEvents();
     } catch (err) {
-      addToast(err.response?.data?.message || 'Failed to approve event.', 'error');
+      addToast(err.message || err.data?.message || err.response?.data?.message || 'Failed to approve event.', 'error');
     } finally {
       setIsApproving(false);
     }
@@ -97,7 +100,7 @@ export const AdminEventsPage = () => {
       setRejectError('');
       fetchAdminEvents();
     } catch (err) {
-      addToast(err.response?.data?.message || 'Failed to reject event.', 'error');
+      addToast(err.message || err.data?.message || err.response?.data?.message || 'Failed to reject event.', 'error');
     } finally {
       setIsRejecting(false);
     }

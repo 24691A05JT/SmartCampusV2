@@ -1,13 +1,29 @@
 export const SkeletonLoader = ({
   variant = 'text',
   count = 1,
+  height,
+  width,
+  style = {},
   className = ''
 }) => {
-  const items = Array.from({ length: count });
+  const items = Array.from({ length: Math.max(1, count) });
+
+  const customStyle = {
+    ...(height ? { height: typeof height === 'number' ? `${height}px` : height } : {}),
+    ...(width ? { width: typeof width === 'number' ? `${width}px` : width } : {}),
+    ...style
+  };
 
   if (variant === 'stat') {
     return (
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 ${className}`}>
+      <div
+        role="status"
+        aria-busy="true"
+        aria-live="polite"
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 ${className}`}
+        style={style}
+      >
+        <span className="sr-only">Loading statistics...</span>
         {items.map((_, i) => (
           <div
             key={i}
@@ -27,7 +43,14 @@ export const SkeletonLoader = ({
 
   if (variant === 'card') {
     return (
-      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
+      <div
+        role="status"
+        aria-busy="true"
+        aria-live="polite"
+        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}
+        style={style}
+      >
+        <span className="sr-only">Loading cards...</span>
         {items.map((_, i) => (
           <div
             key={i}
@@ -55,7 +78,14 @@ export const SkeletonLoader = ({
 
   if (variant === 'table') {
     return (
-      <div className={`bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden ${className}`}>
+      <div
+        role="status"
+        aria-busy="true"
+        aria-live="polite"
+        className={`bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden ${className}`}
+        style={style}
+      >
+        <span className="sr-only">Loading table data...</span>
         <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex gap-4">
           <div className="h-4 bg-slate-800 rounded w-1/4 animate-pulse" />
           <div className="h-4 bg-slate-800 rounded w-1/4 animate-pulse" />
@@ -76,14 +106,25 @@ export const SkeletonLoader = ({
     );
   }
 
-  // Default text skeleton
+  // Default text / block skeleton
   return (
-    <div className={`flex flex-col gap-2.5 ${className}`}>
+    <div
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      className={`flex flex-col gap-2.5 ${count === 1 && height ? 'w-full' : ''}`}
+    >
+      <span className="sr-only">Loading content...</span>
       {items.map((_, i) => (
         <div
           key={i}
-          className="h-4 bg-slate-800/80 rounded-md animate-pulse"
-          style={{ width: i === items.length - 1 && count > 1 ? '60%' : '100%' }}
+          className={`${height ? '' : 'h-4'} bg-slate-800/80 rounded-xl animate-pulse ${className}`}
+          style={{
+            ...customStyle,
+            ...(width
+              ? {}
+              : { width: i === items.length - 1 && count > 1 ? '60%' : '100%' })
+          }}
         />
       ))}
     </div>

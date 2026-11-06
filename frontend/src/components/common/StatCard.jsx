@@ -22,6 +22,11 @@ const ACCENTS = {
     icon: 'text-rose-400',
     glow: 'from-rose-500/5 to-transparent'
   },
+  purple: {
+    bg: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    icon: 'text-purple-400',
+    glow: 'from-purple-500/5 to-transparent'
+  },
   sky: {
     bg: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
     icon: 'text-sky-400',
@@ -35,26 +40,31 @@ export const StatCard = ({
   icon: Icon,
   trend,
   trendLabel,
+  subtitle,
+  description,
   isPositive = true,
-  accentColor = 'indigo',
+  accentColor,
+  accent,
   className = ''
 }) => {
-  const accent = ACCENTS[accentColor] || ACCENTS.indigo;
+  const chosenAccentKey = accent || accentColor || 'indigo';
+  const selectedAccent = ACCENTS[chosenAccentKey] || ACCENTS.indigo;
+  const secondaryText = subtitle || description;
 
   return (
     <div
       className={`relative overflow-hidden bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-slate-700 hover:shadow-2xl hover:-translate-y-0.5 ${className}`}
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${accent.glow} pointer-events-none`} />
+      <div className={`absolute inset-0 bg-gradient-to-br ${selectedAccent.glow} pointer-events-none`} />
 
       <div className="relative flex items-center justify-between gap-4 mb-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</p>
         {Icon && (
-          <div className={`p-2.5 rounded-xl border ${accent.bg}`}>
+          <div className={`p-2.5 rounded-xl border ${selectedAccent.bg}`}>
             {React.isValidElement(Icon) ? (
               Icon
             ) : typeof Icon === 'function' ? (
-              <Icon className={`w-5 h-5 ${accent.icon}`} />
+              <Icon className={`w-5 h-5 ${selectedAccent.icon}`} />
             ) : null}
           </div>
         )}
@@ -77,6 +87,10 @@ export const StatCard = ({
             </span>
             {trendLabel && <span className="text-slate-400">{trendLabel}</span>}
           </div>
+        )}
+
+        {secondaryText && (
+          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">{secondaryText}</p>
         )}
       </div>
     </div>

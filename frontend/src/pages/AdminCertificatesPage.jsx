@@ -205,10 +205,15 @@ export const AdminCertificatesPage = () => {
 
       {/* Filters & Search */}
       <div className="glass-card rounded-2xl border border-slate-800 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div
+          role="group"
+          aria-label="Filter certificates by status"
+          className="flex items-center gap-2 w-full sm:w-auto"
+        >
           {['all', 'valid', 'revoked'].map((status) => (
             <button
               key={status}
+              type="button"
               onClick={() => setStatusFilter(status)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition ${
                 statusFilter === status
@@ -222,8 +227,10 @@ export const AdminCertificatesPage = () => {
         </div>
 
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
+            id="search-certificates-input"
+            aria-label="Search certificates by certificate ID"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -245,15 +252,16 @@ export const AdminCertificatesPage = () => {
       ) : (
         <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs" aria-label="Campus certificate registry">
+              <caption className="sr-only">Cryptographic digital certificate records registry</caption>
               <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase font-semibold text-[11px] tracking-wider">
                 <tr>
-                  <th className="py-3.5 px-4">Certificate ID</th>
-                  <th className="py-3.5 px-4">Recipient Student</th>
-                  <th className="py-3.5 px-4">Event & Category</th>
-                  <th className="py-3.5 px-4">Issue Date</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th scope="col" className="py-3.5 px-4">Certificate ID</th>
+                  <th scope="col" className="py-3.5 px-4">Recipient Student</th>
+                  <th scope="col" className="py-3.5 px-4">Event & Category</th>
+                  <th scope="col" className="py-3.5 px-4">Issue Date</th>
+                  <th scope="col" className="py-3.5 px-4">Status</th>
+                  <th scope="col" className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">

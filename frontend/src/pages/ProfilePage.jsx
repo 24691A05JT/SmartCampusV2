@@ -288,10 +288,14 @@ export const ProfilePage = () => {
 
             {/* Interest Tags */}
             <div className="space-y-1.5 pt-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <span id="interests-group-label" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                 Interests (AI Scoring Alignment)
-              </label>
-              <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-950/40 rounded-xl border border-slate-800">
+              </span>
+              <div
+                role="group"
+                aria-labelledby="interests-group-label"
+                className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-950/40 rounded-xl border border-slate-800"
+              >
                 {ALL_INTERESTS.map((item) => {
                   const isSelected = interests.includes(item);
                   return (
@@ -299,6 +303,7 @@ export const ProfilePage = () => {
                       key={item}
                       type="button"
                       onClick={() => toggleInterest(item)}
+                      aria-pressed={isSelected}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-indigo-600/30 border-indigo-500 text-indigo-200'
@@ -315,9 +320,9 @@ export const ProfilePage = () => {
 
             {/* Skills */}
             <div className="space-y-1.5 pt-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <span id="skills-group-label" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                 Skills & Technical Competencies
-              </label>
+              </span>
               <div className="flex flex-wrap gap-1.5">
                 {skills.map((skill) => (
                   <span
@@ -328,6 +333,7 @@ export const ProfilePage = () => {
                     <button
                       type="button"
                       onClick={() => removeSkill(skill)}
+                      aria-label={`Remove skill ${skill}`}
                       className="hover:text-rose-400 ml-1 cursor-pointer"
                     >
                       ×
@@ -338,6 +344,8 @@ export const ProfilePage = () => {
 
               <div className="flex gap-2 pt-1">
                 <input
+                  id="add-skill-input"
+                  aria-label="Add new skill or technical competency"
                   type="text"
                   placeholder="Add skill (e.g. AWS)..."
                   value={customSkill}

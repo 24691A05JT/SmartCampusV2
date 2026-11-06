@@ -21,6 +21,7 @@ export const ConfirmDialog = ({
       onClose={isConfirming ? () => {} : onClose}
       size="sm"
       className="border-slate-800"
+      ariaLabel={title}
     >
       <div className="flex flex-col items-center text-center p-2">
         <div

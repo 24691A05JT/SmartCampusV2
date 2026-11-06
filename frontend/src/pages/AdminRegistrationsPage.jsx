@@ -213,8 +213,10 @@ export const AdminRegistrationsPage = () => {
         {/* Filters & Search */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
           <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              id="search-registrations-input"
+              aria-label="Search registrations by student or event title"
               type="text"
               placeholder="Search by student or event title..."
               value={searchTerm}
@@ -227,7 +229,11 @@ export const AdminRegistrationsPage = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            <div
+              role="group"
+              aria-label="Filter registrations by status"
+              className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs"
+            >
               {['all', 'confirmed', 'cancelled', 'waitlisted'].map((st) => (
                 <button
                   key={st}
@@ -279,15 +285,16 @@ export const AdminRegistrationsPage = () => {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse" aria-label="Campus event registrations">
+              <caption className="sr-only">Detailed list of student registrations and attendance status</caption>
               <thead>
                 <tr className="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  <th className="py-3 px-4">Student</th>
-                  <th className="py-3 px-4">Event Details</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Attendance</th>
-                  <th className="py-3 px-4">Registered On</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th scope="col" className="py-3 px-4">Student</th>
+                  <th scope="col" className="py-3 px-4">Event Details</th>
+                  <th scope="col" className="py-3 px-4">Status</th>
+                  <th scope="col" className="py-3 px-4">Attendance</th>
+                  <th scope="col" className="py-3 px-4">Registered On</th>
+                  <th scope="col" className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-sm">

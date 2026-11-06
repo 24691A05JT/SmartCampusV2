@@ -168,20 +168,31 @@ export const EventFormModal = ({ isOpen, onClose, event = null, onSuccess }) => 
         excludeEventId: event?._id
       });
 
-      const conflictData = res.data.data;
+      // Defensive conflict normalization:
+      // Backend returns sendSuccess(res, result.message, result) where result is { hasConflict, conflictingEvent, message }
+      // apiClient interceptor unwraps response.data: { success, message, data: { hasConflict, conflictingEvent, message } }
+      const conflictData = res?.data?.hasConflict !== undefined
+        ? res.data
+        : (res?.hasConflict !== undefined ? res : (res?.data || {}));
+
+      const hasConflict = Boolean(conflictData?.hasConflict);
+      const message = conflictData?.message || res?.message || (hasConflict ? 'Schedule conflict detected.' : 'Venue is available.');
+      const conflictingEvent = conflictData?.conflictingEvent || null;
+
       setConflictState({
         checked: true,
-        hasConflict: conflictData.hasConflict,
-        message: conflictData.message,
-        conflictingEvent: conflictData.conflictingEvent,
+        hasConflict,
+        message,
+        conflictingEvent,
         isChecking: false
       });
     } catch (err) {
+      const errorMsg = err.message || err.data?.message || err.response?.data?.message || 'Could not verify venue availability.';
       setConflictState((prev) => ({
         ...prev,
         checked: true,
         hasConflict: false,
-        message: 'Could not verify venue availability.',
+        message: errorMsg,
         isChecking: false
       }));
     }
@@ -261,17 +272,27 @@ export const EventFormModal = ({ isOpen, onClose, event = null, onSuccess }) => 
         );
       }
 
-      onSuccess?.(response.data.data);
+      // Extract saved event defensively
+      const savedEvent = response?.data?.title
+        ? response.data
+        : (response?.title ? response : (response?.data?.data || response?.data));
+
+      onSuccess?.(savedEvent);
       onClose();
     } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to save event.';
+      const msg = err.data?.message || err.response?.data?.message || err.message || 'Failed to save event.';
       addToast(msg, 'error');
-      if (err.response?.data?.data?.conflict) {
+      const conflictPayload =
+        err.data?.errors?.conflict ||
+        err.data?.conflict ||
+        err.response?.data?.data?.conflict ||
+        err.response?.data?.errors?.conflict;
+      if (conflictPayload) {
         setConflictState({
           checked: true,
           hasConflict: true,
-          message: err.response.data.data.conflict.message,
-          conflictingEvent: err.response.data.data.conflict.conflictingEvent,
+          message: conflictPayload.message || 'Schedule conflict detected at this venue.',
+          conflictingEvent: conflictPayload.conflictingEvent || null,
           isChecking: false
         });
       }
@@ -396,6 +417,7 @@ export const EventFormModal = ({ isOpen, onClose, event = null, onSuccess }) => 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Select
               label="Campus Venue"
+              id="event-venue"
               required
               options={PRESET_VENUES}
               value={formData.venue}
@@ -405,6 +427,7 @@ export const EventFormModal = ({ isOpen, onClose, event = null, onSuccess }) => 
             {formData.venue === 'Other / Custom Venue' && (
               <Input
                 label="Custom Venue Name"
+                id="event-custom-venue"
                 required
                 placeholder="e.g. Block B Seminar Room 302"
                 value={formData.customVenue}

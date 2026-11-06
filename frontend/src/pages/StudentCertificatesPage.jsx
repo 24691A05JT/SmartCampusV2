@@ -108,6 +108,16 @@ export const StudentCertificatesPage = () => {
     }
   };
 
+  // Keyboard navigation for tablist
+  const handleTabKeyDown = (e, currentTab) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const nextTab = currentTab === 'earned' ? 'eligible' : 'earned';
+      setActiveTab(nextTab);
+      document.getElementById(`tab-${nextTab}`)?.focus();
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       {/* Page Header */}
@@ -171,10 +181,20 @@ export const StudentCertificatesPage = () => {
 
       {/* Tabs and Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-        <div className="flex items-center gap-2">
+        <div
+          role="tablist"
+          aria-label="Certificate categories"
+          className="flex items-center gap-2"
+        >
           <button
+            id="tab-earned"
+            role="tab"
+            aria-selected={activeTab === 'earned'}
+            aria-controls="panel-earned"
+            tabIndex={activeTab === 'earned' ? 0 : -1}
             type="button"
             onClick={() => setActiveTab('earned')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'earned')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
               activeTab === 'earned'
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
@@ -186,8 +206,14 @@ export const StudentCertificatesPage = () => {
           </button>
 
           <button
+            id="tab-eligible"
+            role="tab"
+            aria-selected={activeTab === 'eligible'}
+            aria-controls="panel-eligible"
+            tabIndex={activeTab === 'eligible' ? 0 : -1}
             type="button"
             onClick={() => setActiveTab('eligible')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'eligible')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
               activeTab === 'eligible'
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
@@ -200,8 +226,10 @@ export const StudentCertificatesPage = () => {
         </div>
 
         <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
+            id="search-certificates"
+            aria-label="Search certificates by event or ID"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -211,118 +239,126 @@ export const StudentCertificatesPage = () => {
         </div>
       </div>
 
-      {/* Content Rendering */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <SkeletonLoader key={i} height="280px" className="rounded-2xl" />
-          ))}
-        </div>
-      ) : activeTab === 'earned' ? (
-        filteredCertificates.length === 0 ? (
-          <EmptyState
-            icon={Award}
-            title={searchQuery ? 'No Matching Certificates' : 'No Certificates Issued Yet'}
-            description={
-              searchQuery
-                ? `No certificates matched "${searchQuery}". Clear your search query to see all.`
-                : 'As you attend campus workshops, technical hackathons, and seminars, faculty organizers will issue your official credentials.'
-            }
-          />
-        ) : (
+      {/* Content Rendering Tab Panel */}
+      <div
+        id={`panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${activeTab}`}
+        tabIndex={0}
+        className="outline-none"
+      >
+        {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCertificates.map((cert) => (
-              <CertificateCard
-                key={cert._id}
-                certificate={cert}
-                onPreview={(c) => setPreviewCert(c)}
-                onDownload={handleDownload}
-                isDownloading={downloadingId === cert.certificateId}
-              />
+            {[1, 2, 3].map((i) => (
+              <SkeletonLoader key={i} height="280px" className="rounded-2xl" />
             ))}
           </div>
-        )
-      ) : (
-        // Eligible / Attended Events Tab
-        filteredEligible.length === 0 ? (
-          <EmptyState
-            icon={Clock}
-            title="No Attended Events Found"
-            description="When you attend approved campus events and your attendance is verified by faculty, your event honors will appear here."
-          />
+        ) : activeTab === 'earned' ? (
+          filteredCertificates.length === 0 ? (
+            <EmptyState
+              icon={Award}
+              title={searchQuery ? 'No Matching Certificates' : 'No Certificates Issued Yet'}
+              description={
+                searchQuery
+                  ? `No certificates matched "${searchQuery}". Clear your search query to see all.`
+                  : 'As you attend campus workshops, technical hackathons, and seminars, faculty organizers will issue your official credentials.'
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCertificates.map((cert) => (
+                <CertificateCard
+                  key={cert._id}
+                  certificate={cert}
+                  onPreview={(c) => setPreviewCert(c)}
+                  onDownload={handleDownload}
+                  isDownloading={downloadingId === cert.certificateId}
+                />
+              ))}
+            </div>
+          )
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEligible.map((item) => {
-              const ev = item.event || {};
-              const eventDate = ev.date
-                ? new Date(ev.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })
-                : 'Date TBA';
+          // Eligible / Attended Events Tab
+          filteredEligible.length === 0 ? (
+            <EmptyState
+              icon={Clock}
+              title="No Attended Events Found"
+              description="When you attend approved campus events and your attendance is verified by faculty, your event honors will appear here."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEligible.map((item) => {
+                const ev = item.event || {};
+                const eventDate = ev.date
+                  ? new Date(ev.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })
+                  : 'Date TBA';
 
-              return (
-                <div
-                  key={ev._id}
-                  className="glass-card rounded-2xl border border-slate-800 p-5 flex flex-col justify-between space-y-4 hover:border-slate-700 transition"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <Badge variant="purple" size="sm">
-                        {ev.category || 'Event'}
-                      </Badge>
-                      {item.isIssued ? (
-                        <Badge variant="success" size="sm" hasDot>
-                          Issued
+                return (
+                  <div
+                    key={ev._id}
+                    className="glass-card rounded-2xl border border-slate-800 p-5 flex flex-col justify-between space-y-4 hover:border-slate-700 transition"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge variant="purple" size="sm">
+                          {ev.category || 'Event'}
                         </Badge>
-                      ) : (
-                        <Badge variant="info" size="sm" hasDot>
-                          Attendance Verified
-                        </Badge>
-                      )}
+                        {item.isIssued ? (
+                          <Badge variant="success" size="sm" hasDot>
+                            Issued
+                          </Badge>
+                        ) : (
+                          <Badge variant="info" size="sm" hasDot>
+                            Attendance Verified
+                          </Badge>
+                        )}
+                      </div>
+
+                      <h3 className="text-base font-bold text-white line-clamp-1">{ev.title}</h3>
+                      <p className="text-xs text-slate-400 mt-2">
+                        Conducted on: {eventDate} • {ev.venue || 'Campus Venue'}
+                      </p>
                     </div>
 
-                    <h3 className="text-base font-bold text-white line-clamp-1">{ev.title}</h3>
-                    <p className="text-xs text-slate-400 mt-2">
-                      Conducted on: {eventDate} • {ev.venue || 'Campus Venue'}
-                    </p>
-                  </div>
+                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                      {item.isIssued ? (
+                        <span className="text-xs font-mono text-indigo-400 font-semibold">
+                          {item.certificate?.certificateId}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-amber-400 flex items-center gap-1.5 font-medium">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>Awaiting Faculty Issuance</span>
+                        </span>
+                      )}
 
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                    {item.isIssued ? (
-                      <span className="text-xs font-mono text-indigo-400 font-semibold">
-                        {item.certificate?.certificateId}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-amber-400 flex items-center gap-1.5 font-medium">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>Awaiting Faculty Issuance</span>
-                      </span>
-                    )}
-
-                    {item.isIssued && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const matching = certificates.find(
-                            (c) => c.certificateId === item.certificate?.certificateId
-                          );
-                          if (matching) setPreviewCert(matching);
-                        }}
-                        className="text-xs"
-                      >
-                        View Credential
-                      </Button>
-                    )}
+                      {item.isIssued && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const matching = certificates.find(
+                              (c) => c.certificateId === item.certificate?.certificateId
+                            );
+                            if (matching) setPreviewCert(matching);
+                          }}
+                          className="text-xs"
+                        >
+                          View Credential
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )
-      )}
+                );
+              })}
+            </div>
+          )
+        )}
+      </div>
 
       {/* Preview Modal */}
       <CertificatePreviewModal

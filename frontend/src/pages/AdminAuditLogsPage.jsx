@@ -214,8 +214,10 @@ export const AdminAuditLogsPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Search */}
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
+                id="audit-search-input"
+                aria-label="Search audit logs by action, target, or IP address"
                 type="text"
                 placeholder="Search action, target, IP..."
                 value={searchQuery}
@@ -229,6 +231,8 @@ export const AdminAuditLogsPage = () => {
 
             {/* Action Select */}
             <select
+              id="audit-action-filter"
+              aria-label="Filter by audit action"
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
               className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
@@ -247,6 +251,8 @@ export const AdminAuditLogsPage = () => {
 
             {/* Target Type Select */}
             <select
+              id="audit-target-type-filter"
+              aria-label="Filter by target resource type"
               value={targetTypeFilter}
               onChange={(e) => setTargetTypeFilter(e.target.value)}
               className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
@@ -262,6 +268,8 @@ export const AdminAuditLogsPage = () => {
             {/* Date Filters */}
             <div className="flex items-center gap-2">
               <input
+                id="audit-start-date"
+                aria-label="Filter by start date"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -269,6 +277,8 @@ export const AdminAuditLogsPage = () => {
                 title="Start Date"
               />
               <input
+                id="audit-end-date"
+                aria-label="Filter by end date"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
@@ -335,15 +345,16 @@ export const AdminAuditLogsPage = () => {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse" aria-label="Governance audit trail">
+              <caption className="sr-only">Chronological administrative governance and security audit records</caption>
               <thead>
                 <tr className="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  <th className="py-3 px-4">Timestamp</th>
-                  <th className="py-3 px-4">Action</th>
-                  <th className="py-3 px-4">Initiator</th>
-                  <th className="py-3 px-4">Target</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Details</th>
+                  <th scope="col" className="py-3 px-4">Timestamp</th>
+                  <th scope="col" className="py-3 px-4">Action</th>
+                  <th scope="col" className="py-3 px-4">Initiator</th>
+                  <th scope="col" className="py-3 px-4">Target</th>
+                  <th scope="col" className="py-3 px-4">Status</th>
+                  <th scope="col" className="py-3 px-4 text-right">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-sm">

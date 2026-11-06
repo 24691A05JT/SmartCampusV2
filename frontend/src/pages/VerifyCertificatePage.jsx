@@ -87,8 +87,10 @@ export const VerifyCertificatePage = () => {
       <div className="glass-card rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-2xl space-y-4">
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              id="verify-cert-id-input"
+              aria-label="Certificate ID for public verification"
               type="text"
               value={inputCertId}
               onChange={(e) => setInputCertId(e.target.value)}
@@ -115,9 +117,16 @@ export const VerifyCertificatePage = () => {
 
       {/* Results Section */}
       {loading ? (
-        <SkeletonLoader height="320px" className="rounded-3xl" />
+        <div role="status" aria-live="polite">
+          <SkeletonLoader height="320px" className="rounded-3xl" />
+          <span className="sr-only">Verifying certificate cryptographic signatures...</span>
+        </div>
       ) : error ? (
-        <div className="glass-card rounded-3xl border border-rose-500/30 bg-rose-950/10 p-8 text-center space-y-3">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="glass-card rounded-3xl border border-rose-500/30 bg-rose-950/10 p-8 text-center space-y-3"
+        >
           <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
@@ -128,7 +137,7 @@ export const VerifyCertificatePage = () => {
           </p>
         </div>
       ) : result ? (
-        <div className="space-y-6">
+        <div role="status" aria-live="polite" className="space-y-6">
           {/* Validity Banner */}
           {result.status === 'valid' ? (
             <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-4">

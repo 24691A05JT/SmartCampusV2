@@ -253,8 +253,10 @@ export const AdminUsersPage = () => {
         {/* Filters & Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
           <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              id="search-users-input"
+              aria-label="Search users by name, email, or student ID"
               type="text"
               placeholder="Search by name, email, student ID..."
               value={searchTerm}
@@ -268,7 +270,11 @@ export const AdminUsersPage = () => {
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             {/* Role Filter */}
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            <div
+              role="group"
+              aria-label="Filter users by role"
+              className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs"
+            >
               {['all', 'student', 'organizer', 'admin'].map((r) => (
                 <button
                   key={r}
@@ -286,7 +292,11 @@ export const AdminUsersPage = () => {
             </div>
 
             {/* Status Filter */}
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            <div
+              role="group"
+              aria-label="Filter users by account status"
+              className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs"
+            >
               {['all', 'active', 'suspended'].map((s) => (
                 <button
                   key={s}
@@ -339,15 +349,16 @@ export const AdminUsersPage = () => {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse" aria-label="Campus users directory">
+              <caption className="sr-only">Directory of campus students, faculty organizers, and administrators</caption>
               <thead>
                 <tr className="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  <th className="py-3 px-4">User</th>
-                  <th className="py-3 px-4">Role</th>
-                  <th className="py-3 px-4">Department / ID</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Joined</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th scope="col" className="py-3 px-4">User</th>
+                  <th scope="col" className="py-3 px-4">Role</th>
+                  <th scope="col" className="py-3 px-4">Department / ID</th>
+                  <th scope="col" className="py-3 px-4">Status</th>
+                  <th scope="col" className="py-3 px-4">Joined</th>
+                  <th scope="col" className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-sm">

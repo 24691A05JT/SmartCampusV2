@@ -120,7 +120,15 @@ export const EventCard = ({ event, isOrganizerView = false, onEdit, onDelete, on
             </span>
           </div>
 
-          <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+          <div
+            role="progressbar"
+            aria-valuenow={event.registeredCount || 0}
+            aria-valuemin={0}
+            aria-valuemax={event.capacity || 100}
+            aria-valuetext={`${event.registeredCount || 0} of ${event.capacity || 0} seats booked`}
+            aria-label={`Event capacity: ${utilization}% booked`}
+            className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden"
+          >
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 isFull ? 'bg-rose-500' : utilization > 80 ? 'bg-amber-500' : 'bg-indigo-500'
@@ -162,20 +170,26 @@ export const EventCard = ({ event, isOrganizerView = false, onEdit, onDelete, on
                   Delete
                 </Button>
               )}
-              <Link to={`/events/${event._id}`} className="ml-auto">
-                <Button size="sm" variant="ghost">Details</Button>
+              <Link
+                to={`/events/${event._id}`}
+                className="ml-auto inline-flex items-center justify-center text-xs font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-transparent hover:bg-white/10 transition-colors focus-visible:ring-2 focus-visible:ring-slate-500 outline-none"
+                aria-label={`View details for ${event.title}`}
+              >
+                Details
               </Link>
             </div>
           ) : (
-            <Link to={`/events/${event._id}`} className="w-full">
-              <Button
-                variant={isFull ? 'outline' : 'primary'}
-                size="md"
-                fullWidth
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                {isFull ? 'View Event Details' : 'View & Register'}
-              </Button>
+            <Link
+              to={`/events/${event._id}`}
+              className={`relative inline-flex items-center justify-center w-full transition-all duration-200 select-none outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98] font-medium text-sm px-4 py-2.5 rounded-xl gap-2 cursor-pointer ${
+                isFull
+                  ? 'bg-transparent hover:bg-white/5 text-slate-200 border border-slate-700 hover:border-slate-500 focus-visible:ring-indigo-500'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 border border-indigo-500/30 focus-visible:ring-indigo-500'
+              }`}
+              aria-label={isFull ? `View details for fully booked event ${event.title}` : `View details and register for ${event.title}`}
+            >
+              <span>{isFull ? 'View Event Details' : 'View & Register'}</span>
+              <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
             </Link>
           )}
         </div>

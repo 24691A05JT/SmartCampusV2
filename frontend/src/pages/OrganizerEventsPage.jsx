@@ -28,11 +28,11 @@ import apiClient from '../services/apiClient';
 
 export const OrganizerEventsPage = () => {
   const toast = useToast();
-  const addToast = (msg, type = 'info') => {
+  const addToast = useCallback((msg, type = 'info') => {
     if (typeof toast?.addToast === 'function') toast.addToast(msg, type);
     else if (typeof toast?.[type] === 'function') toast[type](msg);
     else if (typeof toast?.showToast === 'function') toast.showToast({ type, message: msg });
-  };
+  }, [toast]);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +54,10 @@ export const OrganizerEventsPage = () => {
     setLoading(true);
     try {
       const res = await apiClient.get('/events/organizer/my-events');
-      setEvents(res.data.data || []);
+      const eventsList = Array.isArray(res?.data)
+        ? res.data
+        : (Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
+      setEvents(eventsList);
     } catch (err) {
       console.error('Failed to fetch organizer events:', err);
       addToast('Could not load your events. Please refresh.', 'error');
@@ -77,7 +80,7 @@ export const OrganizerEventsPage = () => {
       setDeleteEventTarget(null);
       fetchMyEvents();
     } catch (err) {
-      addToast(err.response?.data?.message || 'Failed to delete event.', 'error');
+      addToast(err.message || err.data?.message || err.response?.data?.message || 'Failed to delete event.', 'error');
     } finally {
       setIsDeleting(false);
     }
@@ -93,7 +96,7 @@ export const OrganizerEventsPage = () => {
       setSubmitEventTarget(null);
       fetchMyEvents();
     } catch (err) {
-      addToast(err.response?.data?.message || 'Failed to submit event.', 'error');
+      addToast(err.message || err.data?.message || err.response?.data?.message || 'Failed to submit event.', 'error');
     } finally {
       setIsSubmitting(false);
     }
